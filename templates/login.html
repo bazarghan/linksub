@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورود به اشتراک</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Vazirmatn -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        accent: '#38bdf8',
+                        danger: '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full">
+        <!-- Logo / Header -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4 text-accent text-3xl shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-l from-accent to-blue-600 mb-2">منطقه امن</h1>
+            <p class="text-slate-400 text-sm">لطفاً برای مشاهده لینک‌های اتصال، رمز عبور را وارد کنید</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-card rounded-2xl p-6 shadow-xl shadow-black/30">
+            <form method="POST" action="/login/{{ subpath }}">
+                
+                {% if error %}
+                <div class="bg-danger/20 border border-danger/50 text-red-400 text-sm rounded-lg p-3 mb-5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ error }}</span>
+                </div>
+                {% endif %}
+
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-slate-300 mb-2">رمز عبور</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
+                        <input type="password" name="password" id="password" placeholder="••••••••" required
+                            class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-accent focus:border-accent block pr-10 p-3 text-left dir-ltr transition-all">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full text-darkBg bg-gradient-to-r from-accent to-blue-500 hover:from-blue-400 hover:to-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-800 font-bold rounded-lg text-sm px-5 py-3.5 text-center transition-all shadow-[0_0_15px_rgba(56,189,248,0.3)] hover:shadow-[0_0_20px_rgba(56,189,248,0.5)]">
+                    ورود به حساب
+                </button>
+            </form>
+        </div>
+        
+        <p class="text-center text-slate-600 text-xs mt-6">
+            ارتباط شما کاملاً رمزنگاری شده است <i class="fa-solid fa-shield-halved ml-1"></i>
+        </p>
+    </div>
+
+</body>
+</html>

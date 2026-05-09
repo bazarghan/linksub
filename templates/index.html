@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اطلاعات اشتراک</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Vazirmatn -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        accent: '#38bdf8',
+                        danger: '#ef4444',
+                        warning: '#eab308',
+                        success: '#22c55e',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-10">
+
+    <div class="max-w-md mx-auto pt-8 px-4 sm:max-w-2xl sm:px-6 lg:max-w-4xl lg:px-8">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-l from-accent to-blue-600 mb-2">اشتراک شما</h1>
+            <p class="text-slate-400 text-sm mb-1">وضعیت اتصال: <span class="font-bold {{ 'text-success' if data.status.lower() in ['active', 'فعال'] else 'text-danger' }}">{{ 'فعال' if data.status.lower() == 'active' else data.status }}</span></p>
+            <p class="text-slate-500 text-xs" dir="ltr"><i class="fa-regular fa-clock mr-1"></i> <span id="lastonline-text">{{ data.lastonline }}</span></p>
+        </div>
+
+        <!-- Usage Progress Section -->
+        <div class="glass-card rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
+            <div class="flex justify-between items-end mb-2">
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">مصرف شده / کل</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-bold text-white" id="used-text">{{ data.used }}</span>
+                        <span class="text-sm text-slate-500">از <span id="total-text">{{ data.total }}</span></span>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <span id="percentage-text" class="text-xl font-black text-accent">0%</span>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 rounded-full h-3 mb-2 overflow-hidden">
+                <div id="progress-bar" class="h-3 rounded-full transition-all duration-1000 ease-out w-0 bg-accent"></div>
+            </div>
+            
+            <!-- Data Parsing Logic -->
+            <script>
+                // This script calculates the percentage based on strings that might contain "GB", "MB", etc.
+                function parseBytes(str) {
+                    if (!str || str === "نامشخص") return 0;
+                    str = str.toUpperCase().trim();
+                    const value = parseFloat(str.replace(/[^\d.]/g, ''));
+                    if (isNaN(value)) return 0;
+                    
+                    if (str.includes('GB') || str.includes('G')) return value * 1024 * 1024 * 1024;
+                    if (str.includes('MB') || str.includes('M')) return value * 1024 * 1024;
+                    if (str.includes('KB') || str.includes('K')) return value * 1024;
+                    if (str.includes('B')) return value;
+                    return value; // fallback
+                }
+
+                document.addEventListener("DOMContentLoaded", () => {
+                    const usedStr = "{{ data.used }}";
+                    const totalStr = "{{ data.total }}";
+                    
+                    const usedBytes = parseBytes(usedStr);
+                    const totalBytes = parseBytes(totalStr);
+                    
+                    let percentage = 0;
+                    if (totalBytes > 0) {
+                        percentage = (usedBytes / totalBytes) * 100;
+                    }
+                    if (percentage > 100) percentage = 100;
+                    
+                    // Default color: green. Yellow if > 70%, Red if > 90%
+                    let colorClass = "bg-success";
+                    if (percentage >= 90) {
+                        colorClass = "bg-danger";
+                    } else if (percentage >= 70) {
+                        colorClass = "bg-warning";
+                    } else if (percentage > 0) {
+                        colorClass = "bg-success";
+                    } else {
+                        colorClass = "bg-accent"; // if 0 or unknown
+                    }
+                    
+                    const bar = document.getElementById("progress-bar");
+                    bar.style.width = percentage + "%";
+                    // replace the default bg-accent with the calculated color
+                    bar.className = bar.className.replace("bg-accent", colorClass);
+                    
+                    if (totalBytes > 0) {
+                        document.getElementById("percentage-text").innerText = percentage.toFixed(1) + "%";
+                        document.getElementById("percentage-text").className = document.getElementById("percentage-text").className.replace("text-accent", colorClass.replace('bg-', 'text-'));
+                    } else {
+                        document.getElementById("percentage-text").innerText = "نامحدود";
+                    }
+                    
+                    // Format Last Online and Expire dates to Jalali if they are timestamps
+                    function formatToJalali(tsStr) {
+                        if (!/^-?\d+$/.test(tsStr)) return tsStr; // Return as is if not a number
+                        let ts = parseInt(tsStr, 10);
+                        if (ts <= 0) return tsStr; // "0" or negative means no expiry/unknown
+                        if (ts < 9999999999) ts *= 1000;
+                        const date = new Date(ts);
+                        return new Intl.DateTimeFormat('fa-IR', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        }).format(date);
+                    }
+
+                    const lastOnlineEl = document.getElementById("lastonline-text");
+                    if (lastOnlineEl) {
+                        const original = lastOnlineEl.innerText.trim();
+                        if (/^\d+$/.test(original)) {
+                            lastOnlineEl.innerText = formatToJalali(original);
+                            lastOnlineEl.parentElement.setAttribute('dir', 'rtl');
+                            lastOnlineEl.parentElement.querySelector('i').className = "fa-regular fa-clock ml-1";
+                        }
+                    }
+
+                    const expireEl = document.getElementById("expire-text");
+                    if (expireEl) {
+                        const original = expireEl.innerText.trim();
+                        if (original === "0" || parseInt(original, 10) < 0) {
+                            expireEl.innerText = "بدون انقضا";
+                        } else if (/^\d+$/.test(original)) {
+                            expireEl.innerText = formatToJalali(original);
+                        }
+                    }
+                });
+            </script>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            
+            <!-- Expiration Card -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg transition-transform hover:scale-[1.02]">
+                <div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-3">
+                    <i class="fa-regular fa-calendar-days text-lg"></i>
+                </div>
+                <p class="text-xs text-slate-400 mb-1">انقضا</p>
+                <p class="text-sm font-bold text-white" id="expire-text">{{ data.expire }}</p>
+            </div>
+
+            <!-- Remaining Card -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg transition-transform hover:scale-[1.02]">
+                <div class="w-10 h-10 rounded-full bg-accent/20 text-accent flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-chart-pie text-lg"></i>
+                </div>
+                <p class="text-xs text-slate-400 mb-1">حجم باقیمانده</p>
+                <p class="text-sm font-bold text-white">{{ data.remained }}</p>
+            </div>
+            
+            <!-- Download Card -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg transition-transform hover:scale-[1.02]">
+                <div class="w-10 h-10 rounded-full bg-success/20 text-success flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-arrow-down text-lg"></i>
+                </div>
+                <p class="text-xs text-slate-400 mb-1">دانلود</p>
+                <p class="text-sm font-bold text-white">{{ data.download }}</p>
+            </div>
+
+            <!-- Upload Card -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg transition-transform hover:scale-[1.02]">
+                <div class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-arrow-up text-lg"></i>
+                </div>
+                <p class="text-xs text-slate-400 mb-1">آپلود</p>
+                <p class="text-sm font-bold text-white">{{ data.upload }}</p>
+            </div>
+
+        </div>
+
+        <!-- Links Section -->
+        <div>
+            <h2 class="text-xl font-bold text-white mb-4 px-1"><i class="fa-solid fa-link ml-2 text-accent"></i>لینک‌های اتصال</h2>
+            
+            <div class="space-y-3">
+                {% if links %}
+                    {% for link in links %}
+                        <div class="glass-card rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between group gap-3">
+                            <div class="flex-1 w-full overflow-hidden">
+                                <p class="text-[13px] font-mono text-slate-300 break-all leading-relaxed dir-ltr text-left bg-black/20 p-3 rounded-lg border border-white/5">{{ link }}</p>
+                            </div>
+                            <div class="flex justify-end sm:mr-3">
+                                <button onclick="copyToClipboard('{{ link }}', this)" class="bg-slate-700/50 hover:bg-accent hover:text-darkBg text-slate-300 transition-colors rounded-lg w-10 h-10 flex items-center justify-center shrink-0 shadow-lg" title="کپی کردن">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="glass-card rounded-xl p-6 text-center text-slate-400 text-sm">
+                        هیچ لینکی یافت نشد.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-success text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50 flex items-center gap-2">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>لینک کپی شد!</span>
+    </div>
+
+    <script>
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Change icon temporarily
+                const icon = button.querySelector('i');
+                const originalClass = icon.className;
+                icon.className = 'fa-solid fa-check text-success';
+                
+                // Show toast
+                const toast = document.getElementById('toast');
+                toast.classList.remove('opacity-0');
+                
+                setTimeout(() => {
+                    icon.className = originalClass;
+                    toast.classList.add('opacity-0');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('خطا در کپی کردن لینک');
+            });
+        }
+    </script>
+</body>
+</html>

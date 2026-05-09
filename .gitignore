@@ -1,0 +1,17 @@
+# Environments
+.env
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.idea/
+.vscode/
+
+# Test files
+test.py

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  vpn-sub-proxy:
+    build: .
+    container_name: vpn-sub-proxy
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    # Optional: If you want to view logs easily or keep them limited
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
